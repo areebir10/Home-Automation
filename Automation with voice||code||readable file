@@ -1,0 +1,371 @@
+#include<ESP8266WiFi.h>
+WiFiClient client;
+WiFiServer server(80);
+
+const char* ssid="Area 51";
+const char* password = "9aaliens";
+String data = "";
+
+int Relay1 = 12; //D0
+int Relay2 = 16; //D6
+
+
+void setup() {
+  pinMode(Relay1, OUTPUT);
+  pinMode(Relay2, OUTPUT);
+
+  digitalWrite(Relay1, HIGH);
+  digitalWrite(Relay2, HIGH);
+
+  Serial.begin(115200);
+  connectWiFi();
+  server.begin();
+}
+
+void loop() {
+  client = server.available();
+  if(!client) 
+  return;
+  data = checkClient();
+  Serial.print(data);
+  Serial.println();
+  if(data == "light")
+  digitalWrite(Relay1, !digitalRead(Relay1));
+  if(data == "fan%20on")
+  digitalWrite(Relay2, LOW);
+  if(data == "fan%20off")
+  digitalWrite(Relay2, HIGH);
+}
+
+void connectWiFi(){
+  Serial.println("Connecting to WIFI");
+  WiFi.begin(ssid, password);
+  while ((!(WiFi.status() == WL_CONNECTED)))
+  {
+    delay(300);
+    Serial.print("..");
+  }
+  Serial.println("");
+  Serial.println("WiFi conn#include <VoiceRecognitionV3.h>
+#include <LiquidCrystal.h>
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WiFiServer.h>
+#include <WiFiUdp.h>
+
+#define DEBUG true
+#include<SoftwareSerial.h>
+ 
+SoftwareSerial esp8266(2,3); // rx, tx
+// This means that you need to connect the TX pin of the esp to the Arduino's pin 2
+// and the RX pin of the esp to the Arduino's pin 3
+int sw1 = 9;
+int sw2 = 10;
+int sw3 = 11;
+int sw4 = 12;
+int sw5 = 13;
+ 
+ 
+int flag1 = 0;
+int flag2 = 0;
+int flag3 = 0;
+int flag4 = 0;
+int flag5 = 0;
+ 
+void setup()
+{
+Serial.begin(115200);
+esp8266.begin(115200); // your esp's baud rate might be different
+pinMode(sw1,OUTPUT);
+pinMode(sw2,OUTPUT);
+pinMode(sw3,OUTPUT);
+pinMode(sw4,OUTPUT);
+pinMode(sw5,OUTPUT);
+ 
+digitalWrite(sw1, LOW);
+digitalWrite(sw2, LOW);
+digitalWrite(sw3, LOW);
+digitalWrite(sw4, LOW);
+digitalWrite(sw5, LOW);
+ 
+ 
+ 
+sendCommand("AT+RST\r\n",2000,DEBUG); // reset module
+sendCommand("AT+CWMODE=2\r\n",1000,DEBUG); // configure as access point
+//sendCommand("AT+CWJAP=\"mySSID\",\"myPassword\"\r\n",3000,DEBUG);
+//delay(10000);
+sendCommand("AT+CIFSR\r\n",1000,DEBUG); // get ip address
+sendCommand("AT+CIPMUX=1\r\n",1000,DEBUG); // configure for multiple connections
+sendCommand("AT+CIPSERVER=1,80\r\n",1000,DEBUG); // turn on server on port 80
+Serial.println("Server Ready");
+}
+ 
+void loop()
+{
+char pinum1 = '0';
+char pinum2 = '0';
+if(esp8266.available()) // check if the esp is sending a message
+{
+ 
+ 
+//delay(1000); // wait for the serial buffer to fill up (read all the serial data)
+ 
+ 
+// get the connection id so that we can then disconnect
+char connectionId = '0'; //esp8266.read(); // subtract 48 because the read() function returns
+// the ASCII decimal value and 0 (the first decimal number) starts at 48
+esp8266.find("pin="); // advance cursor to "pin="
+char pinum1 = (esp8266.read()); // get first number i.e. if the pin 13 then the 1st number is 1
+Serial.println("pin number:");
+Serial.print(pinum1);
+ 
+char pinum2 = (esp8266.read());
+Serial.println("second number:");
+Serial.println(pinum2);
+String content ="" ;
+ 
+// sw1 
+if((pinum1 == '1')&&(pinum2 == '1') && ( flag1 == 0))
+{
+ digitalWrite(sw1, HIGH);
+ content = "sw1 is ON ";
+ flag1 = 1;
+ 
+}
+ 
+if((pinum1 == '1')&&(pinum2 == '8') && (flag1 == 1) )
+{
+ digitalWrite(sw1, LOW);
+  content = "Sw1 is OFF ";
+flag1 = 0;
+ 
+ 
+} 
+ 
+// sw2 
+if((pinum1 == '2')&&(pinum2 == '3') && ( flag2 == 0))
+{
+ digitalWrite(sw2, HIGH);
+ content = "sw2 is ON ";
+ flag2 = 1;
+ 
+}
+ 
+if((pinum1 == '6')&&(pinum2 == '6') && (flag2 == 1) )
+{
+ digitalWrite(sw2, LOW);
+  content = "Sw2 is OFF ";
+flag2 = 0;
+ 
+ 
+} 
+// sw3
+if((pinum1 == '4')&&(pinum2 == '4') && ( flag3 == 0))
+{
+ digitalWrite(sw3, HIGH);
+ content = "sw3 is ON ";
+ flag3 = 1;
+ 
+}
+ 
+if((pinum1 == '7')&&(pinum2 == '7') && (flag3 == 1) )
+{
+ digitalWrite(sw3, LOW);
+  content = "Sw3 is OFF ";
+flag3 = 0;
+ 
+ 
+} 
+ 
+// sw4
+if((pinum1 == '9')&&(pinum2 == '9') && ( flag4 == 0))
+{
+ digitalWrite(sw4, HIGH);
+ content = "sw4 is ON ";
+ flag4 = 1;
+ 
+}
+ 
+if((pinum1 == '6')&&(pinum2 == '4') && (flag4 == 1) )
+{
+ digitalWrite(sw4, LOW);
+  content = "Sw4 is OFF ";
+flag4 = 0;
+ 
+ 
+} 
+ 
+// sw5
+if((pinum1 == '3')&&(pinum2 == '3') && ( flag5 == 0))
+{
+ digitalWrite(sw5, HIGH);
+ content = "sw5 is ON ";
+ flag5 = 1;
+ 
+}
+ 
+if((pinum1 == '9')&&(pinum2 == '5') && (flag5 == 1) )
+{
+ digitalWrite(sw5, LOW);
+  content = "Sw5 is OFF ";
+flag5 = 0;
+ 
+ 
+} 
+ 
+ 
+ 
+ 
+// feedback 
+if((pinum1 == '5')&&(pinum2 == '5') )
+{
+  if (digitalRead(sw1) )
+  content += "Sw1 = ON"; 
+  else 
+  content += "Sw1 = OFF"; 
+ 
+ 
+    if (digitalRead(sw2) )
+  content += " Sw2 = ON"; 
+  else 
+  content += " Sw2 = OFF"; 
+ 
+      if (digitalRead(sw3) )
+  content += " Sw3 = ON"; 
+  else 
+  content += " Sw3 = OFF";
+ 
+         if (digitalRead(sw4) )
+  content += " Sw4 = ON"; 
+  else 
+  content += " Sw4 = OFF"; 
+ 
+         if (digitalRead(sw5) )
+  content += " Sw5 = ON"; 
+  else 
+  content += " Sw5 = OFF"; 
+ 
+ 
+}
+//******************************************
+ 
+ 
+sendHTTPResponse(connectionId,content);
+// make close command
+String closeCommand = "AT+CIPCLOSE=";
+closeCommand+=connectionId; // append connection id
+closeCommand+="\r\n";
+sendCommand(closeCommand,1000,DEBUG); // close connection
+ 
+}
+}
+ 
+/*
+* Name: sendData
+* Description: Function used to send data to ESP8266.
+* Params: command - the data/command to send; timeout - the time to wait for a response; debug - print to Serial window?(true = yes, false = no)
+* Returns: The response from the esp8266 (if there is a reponse)
+*/
+String sendData(String command, const int timeout, boolean debug)
+{
+String response = "";
+int dataSize = command.length();
+char data[dataSize];
+command.toCharArray(data,dataSize);
+esp8266.write(data,dataSize); // send the read character to the esp8266
+if(debug)
+{
+Serial.println("\r\n====== HTTP Response From Arduino ======");
+Serial.write(data,dataSize);
+Serial.println("\r\n========================================");
+}
+long int time = millis();
+while( (time+timeout) > millis())
+{
+while(esp8266.available())
+{
+// The esp has data so display its output to the serial window
+char c = esp8266.read(); // read the next character.
+response+=c;
+}
+}
+if(debug)
+{
+Serial.print(response);
+}
+return response;
+}
+ 
+/*
+* Name: sendHTTPResponse
+* Description: Function that sends HTTP 200, HTML UTF-8 response
+*/
+void sendHTTPResponse(char connectionId, String content)
+{
+// build HTTP response
+String httpResponse;
+String httpHeader;
+// HTTP Header
+httpHeader = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n";
+httpHeader += "Content-Length: ";
+httpHeader += content.length();
+httpHeader += "\r\n";
+httpHeader +="Connection: close\r\n\r\n";
+httpResponse = httpHeader + content + " "; // There is a bug in this code: the last character of "content" is not sent, I cheated by adding this extra space
+sendCIPData(connectionId,httpResponse);
+}
+ 
+/*
+* Name: sendCIPDATA
+* Description: sends a CIPSEND=<connectionId>,<data> command
+*
+*/
+void sendCIPData(char connectionId, String data)
+{
+String cipSend = "AT+CIPSEND=";
+cipSend += connectionId;
+cipSend += ",";
+cipSend +=data.length();
+cipSend +="\r\n";
+sendCommand(cipSend,1000,DEBUG);
+sendData(data,1000,DEBUG);
+}
+ 
+/*
+* Name: sendCommand
+* Description: Function used to send data to ESP8266.
+* Params: command - the data/command to send; timeout - the time to wait for a response; debug - print to Serial window?(true = yes, false = no)
+* Returns: The response from the esp8266 (if there is a reponse)
+*/
+String sendCommand(String command, const int timeout, boolean debug)
+{
+String response = "";
+esp8266.print(command); // send the read character to the esp8266
+long int time = millis();
+while( (time+timeout) > millis())
+{
+while(esp8266.available())
+{
+// The esp has data so display its output to the serial window
+char c = esp8266.read(); // read the next character.
+response+=c;
+}
+}
+if(debug)
+{
+Serial.print(response);
+}
+return response;
+}
+ected");
+  Serial.println("NodeMCU Local IP is : ");
+  Serial.print((WiFi.localIP()));
+}
+
+String checkClient(void){
+  while(!client.available()) delay(1); 
+  String request = client.readStringUntil('\r');
+  request.remove(0, 5);
+  request.remove(request.length()-9,9);
+  return request;
+}
